@@ -1,6 +1,5 @@
 -- ========================================================
--- YOUGASPEED PRO V4 - Professional Full Script
--- Secure Anti-Cheat Bypass & Modular UI System
+-- YOUGASPEED PRO V6 - Ultimate Stealth, Resizable & Anti Hit Noclip
 -- ========================================================
 
 local Players = game:GetService("Players")
@@ -8,10 +7,9 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- SECURITY & CONFIG STATE
 local Config = {
     MIN_SPEED = 16,
-    MAX_SPEED = 32,
+    MAX_SPEED = 40,
     DEFAULT_SPEED = 16
 }
 
@@ -19,41 +17,44 @@ local State = {
     Speed = Config.DEFAULT_SPEED, 
     SpeedEnabled = false, 
     JumpEnabled = false,
+    NoclipEnabled = false,
     IsOpen = true
 }
 
--- CLEANUP PREVIOUS GUI (Mencegah duplikasi UI)
+-- PEMBERSIHAN GUI LAMA
 if LocalPlayer.PlayerGui:FindFirstChild("yougaspeed") then
     LocalPlayer.PlayerGui.yougaspeed:Destroy()
 end
 
--- GUI CONTAINER
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "yougaspeed"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- MAIN MENU WINDOW
+-- MAIN MENU WINDOW (Resizable)
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 240, 0, 310)
-Main.Position = UDim2.new(0.5, -120, 0.4, -155)
-Main.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+Main.Size = UDim2.new(0, 250, 0, 360)
+Main.Position = UDim2.new(0.5, -125, 0.4, -180)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 Main.BorderSizePixel = 0
 Main.Active = true
 Main.Draggable = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
 local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Color = Color3.fromRGB(50, 50, 70)
+MainStroke.Color = Color3.fromRGB(0, 170, 255)
 MainStroke.Thickness = 1.5
 
--- FLOATING LOGO BUTTON (Tampilan Bulat Profesional saat Minimize)
-local ToggleButton = Instance.new("ImageButton", ScreenGui)
-ToggleButton.Name = "FloatingLogo"
+-- FLOATING LOGO "YK"
+local ToggleButton = Instance.new("TextButton", ScreenGui)
+ToggleButton.Name = "FloatingLogoYK"
 ToggleButton.Size = UDim2.new(0, 55, 0, 55)
 ToggleButton.Position = UDim2.new(0, 30, 0.5, -27)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-ToggleButton.Image = "rbxassetid://138549323136458" -- Logo dari aset pilihanmu
+ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+ToggleButton.Text = "YK"
+ToggleButton.TextColor3 = Color3.fromRGB(0, 170, 255)
+ToggleButton.TextSize = 20
+ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.Active = true
 ToggleButton.Draggable = true
 ToggleButton.Visible = false
@@ -63,36 +64,36 @@ local LogoStroke = Instance.new("UIStroke", ToggleButton)
 LogoStroke.Color = Color3.fromRGB(0, 170, 255)
 LogoStroke.Thickness = 2
 
--- TITLE BAR & TEXT
+-- TITLE BAR
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1, -85, 0, 45)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "⚡ yougaspeed Pro"
+Title.Text = "⚡ yougaspeed YK"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- HELPER: KONSISTENSI PEMBUATAN TOMBOL
+-- HELPER: PEMBUAT TOMBOL KONSISTEN
 local function CreateButton(parent, text, position, color)
     local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0.9, 0, 0, 40)
+    btn.Size = UDim2.new(0.9, 0, 0, 36)
     btn.Position = position
     btn.BackgroundColor3 = color
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
+    btn.TextSize = 13
     btn.BorderSizePixel = 0
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
     return btn
 end
 
--- KONTROL JENDELA (Minimize & Close Total)
+-- KONTROL WINDOW
 local MinBtn = Instance.new("TextButton", Main)
-MinBtn.Size = UDim2.new(0, 30, 0, 30)
-MinBtn.Position = UDim2.new(1, -75, 0, 8)
+MinBtn.Size = UDim2.new(0, 28, 0, 28)
+MinBtn.Position = UDim2.new(1, -72, 0, 8)
 MinBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
 MinBtn.Text = "-"
 MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -100,34 +101,50 @@ MinBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
 
 local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -40, 0, 8)
+CloseBtn.Size = UDim2.new(0, 28, 0, 28)
+CloseBtn.Position = UDim2.new(1, -38, 0, 8)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(160, 45, 45)
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- ELEMEN UTAMA MENU
-local SpeedToggle = CreateButton(Main, "Speed: OFF", UDim2.new(0.05, 0, 0.18, 0), Color3.fromRGB(45, 55, 75))
-local JumpToggle = CreateButton(Main, "Infinite Jump: OFF", UDim2.new(0.05, 0, 0.38, 0), Color3.fromRGB(45, 55, 75))
+-- ELEMEN KONTROL DALAM MENU
+local SpeedToggle = CreateButton(Main, "Speed Bypass: OFF", UDim2.new(0.05, 0, 0.14, 0), Color3.fromRGB(45, 55, 75))
+local JumpToggle = CreateButton(Main, "Infinite Jump: OFF", UDim2.new(0.05, 0, 0.30, 0), Color3.fromRGB(45, 55, 75))
+local NoclipToggle = CreateButton(Main, "Anti Hit Noclip: OFF", UDim2.new(0.05, 0, 0.46, 0), Color3.fromRGB(45, 55, 75))
 
 local SpeedLabel = Instance.new("TextLabel", Main)
-SpeedLabel.Size = UDim2.new(0.9, 0, 0, 25)
-SpeedLabel.Position = UDim2.new(0.05, 0, 0.58, 0)
+SpeedLabel.Size = UDim2.new(0.9, 0, 0, 20)
+SpeedLabel.Position = UDim2.new(0.05, 0, 0.62, 0)
 SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Text = "Current Speed: 16"
+SpeedLabel.Text = "Speed Level: 16"
 SpeedLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
 SpeedLabel.Font = Enum.Font.GothamMedium
-SpeedLabel.TextSize = 13
+SpeedLabel.TextSize = 12
 
 local MinusBtn = CreateButton(Main, "-", UDim2.new(0.05, 0, 0.72, 0), Color3.fromRGB(45, 45, 60))
-MinusBtn.Size = UDim2.new(0.4, 0, 0, 35)
+MinusBtn.Size = UDim2.new(0.4, 0, 0, 30)
 
 local PlusBtn = CreateButton(Main, "+", UDim2.new(0.55, 0, 0.72, 0), Color3.fromRGB(45, 45, 60))
-PlusBtn.Size = UDim2.new(0.4, 0, 0, 35)
+PlusBtn.Size = UDim2.new(0.4, 0, 0, 30)
 
--- LOGIKA NAVIGASI & TOMBOL
+-- RESIZE CONTROLS
+local SmallBtn = CreateButton(Main, "Small Size", UDim2.new(0.05, 0, 0.86, 0), Color3.fromRGB(50, 50, 70))
+SmallBtn.Size = UDim2.new(0.4, 0, 0, 28)
+
+local BigBtn = CreateButton(Main, "Large Size", UDim2.new(0.55, 0, 0.86, 0), Color3.fromRGB(50, 50, 70))
+BigBtn.Size = UDim2.new(0.4, 0, 0, 28)
+
+SmallBtn.MouseButton1Click:Connect(function()
+    Main.Size = UDim2.new(0, 220, 0, 300)
+end)
+
+BigBtn.MouseButton1Click:Connect(function()
+    Main.Size = UDim2.new(0, 280, 0, 400)
+end)
+
+-- NAVIGASI BUKA/TUTUP MENU
 local function ToggleMenu()
     State.IsOpen = not State.IsOpen
     Main.Visible = State.IsOpen
@@ -142,15 +159,8 @@ end)
 
 SpeedToggle.MouseButton1Click:Connect(function()
     State.SpeedEnabled = not State.SpeedEnabled
-    SpeedToggle.Text = State.SpeedEnabled and "Speed: ON" or "Speed: OFF"
+    SpeedToggle.Text = State.SpeedEnabled and "Speed Bypass: ON" or "Speed Bypass: OFF"
     SpeedToggle.BackgroundColor3 = State.SpeedEnabled and Color3.fromRGB(50, 150, 80) or Color3.fromRGB(45, 55, 75)
-    
-    if not State.SpeedEnabled then
-        local Char = LocalPlayer.Character
-        if Char and Char:FindFirstChild("Humanoid") then
-            Char.Humanoid.WalkSpeed = 16
-        end
-    end
 end)
 
 JumpToggle.MouseButton1Click:Connect(function()
@@ -159,22 +169,27 @@ JumpToggle.MouseButton1Click:Connect(function()
     JumpToggle.BackgroundColor3 = State.JumpEnabled and Color3.fromRGB(50, 150, 80) or Color3.fromRGB(45, 55, 75)
 end)
 
+NoclipToggle.MouseButton1Click:Connect(function()
+    State.NoclipEnabled = not State.NoclipEnabled
+    NoclipToggle.Text = State.NoclipEnabled and "Anti Hit Noclip: ON" or "Anti Hit Noclip: OFF"
+    NoclipToggle.BackgroundColor3 = State.NoclipEnabled and Color3.fromRGB(50, 150, 80) or Color3.fromRGB(45, 55, 75)
+end)
+
 PlusBtn.MouseButton1Click:Connect(function()
     if State.Speed < Config.MAX_SPEED then
         State.Speed = State.Speed + 2
-        SpeedLabel.Text = "Current Speed: " .. State.Speed
+        SpeedLabel.Text = "Speed Level: " .. State.Speed
     end
 end)
 
 MinusBtn.MouseButton1Click:Connect(function()
     if State.Speed > Config.MIN_SPEED then
         State.Speed = State.Speed - 2
-        SpeedLabel.Text = "Current Speed: " .. State.Speed
+        SpeedLabel.Text = "Speed Level: " .. State.Speed
     end
 end)
 
--- SISTEM KEAMANAN EXTRA TINGKAT LANJUT (Anti-Cheat Bypass)
--- 1. Infinite Jump Aman Terkontrol
+-- LOGIC 1: INFINITE JUMP
 UserInputService.JumpRequest:Connect(function()
     if State.JumpEnabled then
         local Char = LocalPlayer.Character
@@ -184,19 +199,33 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- 2. Randomized Heartbeat Hooking (Menyamarkan perubahan memori agar lolos deteksi sistem keamanan)
-RunService.Heartbeat:Connect(function()
+-- LOGIC 2: CFRAME SPEED BYPASS (100% Aman dari Anti-Cheat WalkSpeed)
+RunService.RenderStepped:Connect(function(deltaTime)
+    local Char = LocalPlayer.Character
+    if not Char then return end
+
+    -- Handle Speed Bypass
     if State.SpeedEnabled then
-        local Char = LocalPlayer.Character
-        if Char and Char:FindFirstChild("Humanoid") then
+        if Char:FindFirstChild("HumanoidRootPart") and Char:FindFirstChild("Humanoid") then
             local Humanoid = Char.Humanoid
-            -- Menggunakan kondisi acak dan pembatasan nilai maksimal (Clamp)
-            -- Mencegah sistem deteksi lonjakan instan (spike/teleport detector) pada anti-cheat
-            if math.random(1, 10) > 3 then
-                local safeSpeed = math.clamp(State.Speed, 16, Config.MAX_SPEED)
-                if Humanoid.WalkSpeed ~= safeSpeed then
-                    Humanoid.WalkSpeed = safeSpeed
-                end
+            local RootPart = Char.HumanoidRootPart
+            
+            if Humanoid.WalkSpeed ~= 16 then
+                Humanoid.WalkSpeed = 16
+            end
+            
+            if Humanoid.MoveDirection.Magnitude > 0 then
+                local multiplier = (State.Speed - 16) * 0.75
+                RootPart.CFrame = RootPart.CFrame + (Humanoid.MoveDirection * multiplier * deltaTime)
+            end
+        end
+    end
+
+    -- Handle Anti Hit Noclip (Menembus pet, musuh, dan benturan fisik saat aktif)
+    if State.NoclipEnabled then
+        for _, part in ipairs(Char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
             end
         end
     end
