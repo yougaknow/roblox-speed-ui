@@ -1,5 +1,5 @@
 -- ========================================================
--- YOUGASPEED PRO - Ultimate Security & Extra Features
+-- YOUGASPEED PRO V2 - Floating Logo & Ultimate Security
 -- ========================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -9,7 +9,7 @@ local LocalPlayer = Players.LocalPlayer
 local State = { 
     Speed = 16, 
     IsEnabled = false, 
-    Minimized = false,
+    IsOpen = true,
     InfiniteJump = false
 }
 
@@ -19,6 +19,7 @@ ScreenGui.Name = "yougaspeed"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- MAIN MENU WINDOW
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0, 220, 0, 250)
 Main.Position = UDim2.new(0.5, -110, 0.4, -125)
@@ -27,7 +28,25 @@ Main.BorderSizePixel = 0
 Main.Active = true
 Main.Draggable = true
 
--- TITLE & MINIMIZE BUTTON
+-- FLOATING TOGGLE BUTTON (LOGO BULAT)
+local ToggleButton = Instance.new("ImageButton", ScreenGui)
+ToggleButton.Name = "FloatingLogo"
+ToggleButton.Size = UDim2.new(0, 55, 0, 55) -- Ukuran pas, tidak terlalu kecil
+ToggleButton.Position = UDim2.new(0, 30, 0.5, -25)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+ToggleButton.Image = "rbxassetid://138549323136458" -- ID Gambar kamu
+ToggleButton.Active = true
+ToggleButton.Draggable = true
+ToggleButton.Visible = false -- Awalnya sembunyi karena menu utama sedang terbuka
+
+local LogoCorner = Instance.new("UICorner", ToggleButton)
+LogoCorner.CornerRadius = UDim.new(1, 0) -- Membuat gambar jadi bulat sempurna
+
+local LogoStroke = Instance.new("UIStroke", ToggleButton)
+LogoStroke.Color = Color3.fromRGB(0, 170, 255)
+LogoStroke.Thickness = 2
+
+-- TITLE & MINIMIZE BUTTON (-)
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(0.7, 0, 0, 40)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
@@ -45,10 +64,16 @@ MinBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 MinBtn.Text = "-"
 MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinBtn.Font = Enum.Font.GothamBold
-MinBtn.MouseButton1Click:Connect(function()
-    State.Minimized = not State.Minimized
-    Main.Size = State.Minimized and UDim2.new(0, 220, 0, 40) or UDim2.new(0, 220, 0, 250)
-end)
+
+-- FUNGSI BUKA / TUTUP MENU UTAMA KE LOGO BULAT
+local function ToggleMenu()
+    State.IsOpen = not State.IsOpen
+    Main.Visible = State.IsOpen
+    ToggleButton.Visible = not State.IsOpen
+end
+
+MinBtn.MouseButton1Click:Connect(ToggleMenu)
+ToggleButton.MouseButton1Click:Connect(ToggleMenu)
 
 -- TOGGLE SPEED BUTTON
 local ToggleSpeedBtn = Instance.new("TextButton", Main)
@@ -113,7 +138,7 @@ JumpBtn.MouseButton1Click:Connect(function()
     JumpBtn.BackgroundColor3 = State.InfiniteJump and Color3.fromRGB(200, 50, 50) or Color3.fromRGB(50, 150, 50)
 end)
 
--- IMPLEMENTASI INFINITE JUMP AMAN
+-- IMPLEMENTASI INFINITE JUMP
 UserInputService.JumpRequest:Connect(function()
     if State.InfiniteJump then
         local Char = LocalPlayer.Character
