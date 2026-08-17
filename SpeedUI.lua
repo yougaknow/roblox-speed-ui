@@ -1,70 +1,191 @@
+-- ========================================================
+-- SPEED UI - Roblox Lua Script
+-- Mobile-optimized and draggable window
+-- ========================================================
 
-{
-  "owner": "yougaknow",
-  "repo": "roblox-speed-ui",
-  "path": "SpeedUI.lua",
-  "content": "-- ============================================\n-- SPEED UI - Roblox Lua Script\n-- Self-contained UI for speed control\n-- Mobile-optimized and draggable\n-- ============================================\n\nlocal Players = game:GetService(\"Players\")\nlocal RunService = game:GetService(\"RunService\")\nlocal UserInputService = game:GetService(\"UserInputService\")\nlocal CoreGui = game:GetService(\"CoreGui\")\n\nlocal LocalPlayer = Players.LocalPlayer\nlocal PlayerGui = LocalPlayer:WaitForChild(\"PlayerGui\")\n\n-- ============================================\n-- CONFIGURATION\n-- ============================================\n\nlocal Config = {\n    MIN_SPEED = 16,\n    MAX_SPEED = 100,\n    DEFAULT_SPEED = 16,\n}\n\nlocal State = {\n    CurrentSpeed = Config.DEFAULT_SPEED,\n    IsEnabled = false,\n    IsMinimized = false,\n    IsDragging = false,\n    DragStartPos = nil,\n    PanelStartPos = nil,\n}\n\n-- ============================================\n-- CREATE MAIN SCREEN GUI\n-- ============================================\n\nlocal ScreenGui = Instance.new(\"ScreenGui\")\nScreenGui.Name = \"SpeedUI\"\nScreenGui.ResetOnSpawn = false\nScreenGui.ZIndex = 999\nScreenGui.Parent = CoreGui\n\n-- ============================================\n-- CREATE MAIN PANEL (DRAGGABLE WINDOW)\n-- ============================================\n\nlocal MainPanel = Instance.new(\"Frame\")\nMainPanel.Name = \"MainPanel\"\nMainPanel.Size = UDim2.new(0, 280, 0, 260)\nMainPanel.Position = UDim2.new(0.5, -140, 0.5, -130)\nMainPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 35)\nMainPanel.BorderSizePixel = 0\nMainPanel.Parent = ScreenGui\n\n-- Add corner radius\nlocal PanelCorner = Instance.new(\"UICorner\")\nPanelCorner.CornerRadius = UDim.new(0, 15)\nPanelCorner.Parent = MainPanel\n\n-- ============================================\n-- TITLE BAR (DRAGGABLE REGION)\n-- ============================================\n\nlocal TitleBar = Instance.new(\"Frame\")\nTitleBar.Name = \"TitleBar\"\nTitleBar.Size = UDim2.new(1, 0, 0, 50)\nTitleBar.BackgroundColor3 = Color3.fromRGB(15, 15, 25)\nTitleBar.BorderSizePixel = 0\nTitleBar.Parent = MainPanel\n\nlocal TitleCorner = Instance.new(\"UICorner\")\nTitleCorner.CornerRadius = UDim.new(0, 15)\nTitleCorner.Parent = TitleBar\n\n-- Title Text\nlocal TitleText = Instance.new(\"TextLabel\")\nTitleText.Name = \"TitleText\"\nTitleText.Size = UDim2.new(0.6, 0, 1, 0)\nTitleText.BackgroundTransparency = 1\nTitleText.TextColor3 = Color3.fromRGB(100, 200, 255)\nTitleText.TextSize = 20\nTitleText.Font = Enum.Font.GothamBold\nTitleText.Text = \"⚡ SPEED\"\nTitleText.TextXAlignment = Enum.TextXAlignment.Left\nTitleText.Parent = TitleBar\n\nlocal TitlePadding = Instance.new(\"UIPadding\")\nTitlePadding.PaddingLeft = UDim.new(0, 12)\nTitlePadding.Parent = TitleText\n\n-- Minimize Button\nlocal MinimizeBtn = Instance.new(\"TextButton\")\nMinimizeBtn.Name = \"MinimizeBtn\"\nMinimizeBtn.Size = UDim2.new(0, 40, 0, 40)\nMinimizeBtn.Position = UDim2.new(1, -90, 0, 5)\nMinimizeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)\nMinimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)\nMinimizeBtn.TextSize = 16\nMinimizeBtn.Font = Enum.Font.GothamBold\nMinimizeBtn.Text = \"−\"\nMinimizeBtn.BorderSizePixel = 0\nMinimizeBtn.Parent = TitleBar\n\nlocal MinBtnCorner = Instance.new(\"UICorner\")\nMinBtnCorner.CornerRadius = UDim.new(0, 8)\nMinBtnCorner.Parent = MinimizeBtn\n\n-- Close Button\nlocal CloseBtn = Instance.new(\"TextButton\")\nCloseBtn.Name = \"CloseBtn\"\nCloseBtn.Size = UDim2.new(0, 40, 0, 40)\nCloseBtn.Position = UDim2.new(1, -45, 0, 5)\nCloseBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)\nCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)\nCloseBtn.TextSize = 16\nCloseBtn.Font = Enum.Font.GothamBold\nCloseBtn.Text = \"✕\"\nCloseBtn.BorderSizePixel = 0\nCloseBtn.Parent = TitleBar\n\nlocal CloseBtnCorner = Instance.new(\"UICorner\")\nCloseBtnCorner.CornerRadius = UDim.new(0, 8)\nCloseBtnCorner.Parent = CloseBtn\n\n-- ============================================\n-- CONTENT AREA\n-- ============================================\n\nlocal ContentFrame = Instance.new(\"Frame\")\nContentFrame.Name = \"ContentFrame\"\nContentFrame.Size = UDim2.new(1, 0, 1, -50)\nContentFrame.Position = UDim2.new(0, 0, 0, 50)\nContentFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)\nContentFrame.BorderSizePixel = 0\nContentFrame.Parent = MainPanel\n\nlocal ContentCorner = Instance.new(\"UICorner\")\nContentCorner.CornerRadius = UDim.new(0, 15)\nContentCorner.Parent = ContentFrame\n\nlocal ContentPadding = Instance.new(\"UIPadding\")\nContentPadding.PaddingLeft = UDim.new(0, 12)\nContentPadding.PaddingRight = UDim.new(0, 12)\nContentPadding.PaddingTop = UDim.new(0, 12)\nContentPadding.PaddingBottom = UDim.new(0, 12)\nContentPadding.Parent = ContentFrame\n\n-- ============================================\n-- TOGGLE SWITCH\n-- ============================================\n\nlocal ToggleLabel = Instance.new(\"TextLabel\")\nToggleLabel.Name = \"ToggleLabel\"\nToggleLabel.Size = UDim2.new(0.5, 0, 0, 35)\nToggleLabel.BackgroundTransparency = 1\nToggleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)\nToggleLabel.TextSize = 13\nToggleLabel.Font = Enum.Font.Gotham\nToggleLabel.Text = \"Speed:\"\nToggleLabel.TextXAlignment = Enum.TextXAlignment.Left\nToggleLabel.Parent = ContentFrame\n\nlocal ToggleSwitch = Instance.new(\"TextButton\")\nToggleSwitch.Name = \"ToggleSwitch\"\nToggleSwitch.Size = UDim2.new(0.45, 0, 0, 35)\nToggleSwitch.Position = UDim2.new(0.5, 0, 0, 0)\nToggleSwitch.BackgroundColor3 = Color3.fromRGB(100, 100, 120)\nToggleSwitch.TextColor3 = Color3.fromRGB(255, 255, 255)\nToggleSwitch.TextSize = 13\nToggleSwitch.Font = Enum.Font.GothamBold\nToggleSwitch.Text = \"OFF\"\nToggleSwitch.BorderSizePixel = 0\nToggleSwitch.Parent = ContentFrame\n\nlocal SwitchCorner = Instance.new(\"UICorner\")\nSwitchCorner.CornerRadius = UDim.new(0, 8)\nSwitchCorner.Parent = ToggleSwitch\n\n-- ============================================\n-- SPEED VALUE DISPLAY\n-- ============================================\n\nlocal SpeedDisplay = Instance.new(\"TextLabel\")\nSpeedDisplay.Name = \"SpeedDisplay\"\nSpeedDisplay.Size = UDim2.new(1, 0, 0, 30)\nSpeedDisplay.Position = UDim2.new(0, 0, 0, 45)\nSpeedDisplay.BackgroundTransparency = 1\nSpeedDisplay.TextColor3 = Color3.fromRGB(100, 200, 255)\nSpeedDisplay.TextSize = 22\nSpeedDisplay.Font = Enum.Font.GothamBold\nSpeedDisplay.Text = tostring(Config.DEFAULT_SPEED)\nSpeedDisplay.TextXAlignment = Enum.TextXAlignment.Center\nSpeedDisplay.Parent = ContentFrame\n\n-- ============================================\n-- SLIDER\n-- ============================================\n\nlocal SliderBg = Instance.new(\"Frame\")\nSliderBg.Name = \"SliderBg\"\nSliderBg.Size = UDim2.new(1, 0, 0, 8)\nSliderBg.Position = UDim2.new(0, 0, 0, 85)\nSliderBg.BackgroundColor3 = Color3.fromRGB(45, 45, 65)\nSliderBg.BorderSizePixel = 0\nSliderBg.Parent = ContentFrame\n\nlocal SliderBgCorner = Instance.new(\"UICorner\")\nSliderBgCorner.CornerRadius = UDim.new(0, 4)\nSliderBgCorner.Parent = SliderBg\n\nlocal SliderKnob = Instance.new(\"Frame\")\nSliderKnob.Name = \"SliderKnob\"\nSliderKnob.Size = UDim2.new(0, 18, 0, 18)\nSliderKnob.Position = UDim2.new(0, 0, 0.5, -9)\nSliderKnob.BackgroundColor3 = Color3.fromRGB(100, 200, 255)\nSliderKnob.BorderSizePixel = 0\nSliderKnob.Parent = SliderBg\n\nlocal KnobCorner = Instance.new(\"UICorner\")\nKnobCorner.CornerRadius = UDim.new(0, 9)\nKnobCorner.Parent = SliderKnob\n\n-- Min/Max speed labels\nlocal MinSpeedLabel = Instance.new(\"TextLabel\")\nMinSpeedLabel.Name = \"MinSpeedLabel\"\nMinSpeedLabel.Size = UDim2.new(0.2, 0, 0, 18)\nMinSpeedLabel.Position = UDim2.new(0, 0, 0, 105)\nMinSpeedLabel.BackgroundTransparency = 1\nMinSpeedLabel.TextColor3 = Color3.fromRGB(130, 130, 150)\nMinSpeedLabel.TextSize = 10\nMinSpeedLabel.Font = Enum.Font.Gotham\nMinSpeedLabel.Text = \"16\"\nMinSpeedLabel.Parent = ContentFrame\n\nlocal MaxSpeedLabel = Instance.new(\"TextLabel\")\nMaxSpeedLabel.Name = \"MaxSpeedLabel\"\nMaxSpeedLabel.Size = UDim2.new(0.2, 0, 0, 18)\nMaxSpeedLabel.Position = UDim2.new(0.8, 0, 0, 105)\nMaxSpeedLabel.BackgroundTransparency = 1\nMaxSpeedLabel.TextColor3 = Color3.fromRGB(130, 130, 150)\nMaxSpeedLabel.TextSize = 10\nMaxSpeedLabel.Font = Enum.Font.Gotham\nMaxSpeedLabel.Text = \"100\"\nMaxSpeedLabel.TextXAlignment = Enum.TextXAlignment.Right\nMaxSpeedLabel.Parent = ContentFrame\n\n-- ============================================\n-- MINIMIZED BUTTON\n-- ============================================\n\nlocal MinimizedBtn = Instance.new(\"TextButton\")\nMinimizedBtn.Name = \"MinimizedBtn\"\nMinimizedBtn.Size = UDim2.new(0, 100, 0, 100)\nMinimizedBtn.Position = UDim2.new(0.5, -50, 0.5, -50)\nMinimizedBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)\nMinimizedBtn.TextColor3 = Color3.fromRGB(100, 200, 255)\nMinimizedBtn.TextSize = 28\nMinimizedBtn.Font = Enum.Font.GothamBold\nMinimizedBtn.Text = \"⚡\"\nMinimizedBtn.BorderSizePixel = 0\nMinimizedBtn.Visible = false\nMinimizedBtn.Parent = ScreenGui\n\nlocal MinimizedCorner = Instance.new(\"UICorner\")\nMinimizedCorner.CornerRadius = UDim.new(0, 14)\nMinimizedCorner.Parent = MinimizedBtn\n\n-- ============================================\n-- DRAGGING LOGIC\n-- ============================================\n\nlocal function StartDrag(input)\n    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then\n        State.IsDragging = true\n        State.DragStartPos = input.Position\n        State.PanelStartPos = MainPanel.Position\n    end\nend\n\nlocal function UpdateDrag(input)\n    if State.IsDragging and State.DragStartPos and State.PanelStartPos then\n        local Delta = input.Position - State.DragStartPos\n        MainPanel.Position = State.PanelStartPos + UDim2.new(0, Delta.X, 0, Delta.Y)\n    end\nend\n\nlocal function EndDrag()\n    State.IsDragging = false\n    State.DragStartPos = nil\n    State.PanelStartPos = nil\nend\n\nTitleBar.InputBegan:Connect(StartDrag)\nUserInputService.InputChanged:Connect(UpdateDrag)\nUserInputService.InputEnded:Connect(function(input)\n    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then\n        EndDrag()\n    end\nend)\n\n-- ============================================\n-- SLIDER INTERACTION\n-- ============================================\n\nlocal function UpdateSliderFromInput(input)\n    local MouseX = input.Position.X\n    local SliderLeft = SliderBg.AbsolutePosition.X\n    local SliderWidth = SliderBg.AbsoluteSize.X\n    \n    if MouseX < SliderLeft or MouseX > SliderLeft + SliderWidth then\n        return\n    end\n    \n    local RelativeX = MouseX - SliderLeft\n    local Percentage = math.clamp(RelativeX / SliderWidth, 0, 1)\n    local Range = Config.MAX_SPEED - Config.MIN_SPEED\n    \n    State.CurrentSpeed = math.floor(Config.MIN_SPEED + (Percentage * Range) + 0.5)\n    UpdateSliderDisplay()\n    \n    if State.IsEnabled then\n        ApplySpeed()\n    end\nend\n\nfunction UpdateSliderDisplay()\n    local Range = Config.MAX_SPEED - Config.MIN_SPEED\n    local Percentage = (State.CurrentSpeed - Config.MIN_SPEED) / Range\n    \n    SliderKnob.Position = UDim2.new(Percentage, -9, 0.5, -9)\n    SpeedDisplay.Text = tostring(State.CurrentSpeed)\nend\n\nSliderBg.InputBegan:Connect(function(input)\n    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then\n        UpdateSliderFromInput(input)\n    end\nend)\n\nSliderBg.InputChanged:Connect(function(input)\n    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then\n        UpdateSliderFromInput(input)\n    end\nend)\n\n-- ============================================\n-- SPEED APPLICATION\n-- ============================================\n\nfunction ApplySpeed()\n    if not LocalPlayer.Character then\n        return\n    end\n    \n    local Humanoid = LocalPlayer.Character:FindFirstChild(\"Humanoid\")\n    if Humanoid then\n        Humanoid.WalkSpeed = State.CurrentSpeed\n    end\nend\n\nfunction ResetSpeed()\n    if not LocalPlayer.Character then\n        return\n    end\n    \n    local Humanoid = LocalPlayer.Character:FindFirstChild(\"Humanoid\")\n    if Humanoid then\n        Humanoid.WalkSpeed = Config.DEFAULT_SPEED\n    end\nend\n\n-- Handle character respawn\nlocal function OnCharacterAdded()\n    task.wait(0.1)\n    if State.IsEnabled then\n        ApplySpeed()\n    end\nend\n\nLocalPlayer.CharacterAdded:Connect(OnCharacterAdded)\n\nif LocalPlayer.Character then\n    OnCharacterAdded()\nend\n\n-- ============================================\n-- TOGGLE BUTTON\n-- ============================================\n\nToggleSwitch.MouseButton1Click:Connect(function()\n    State.IsEnabled = not State.IsEnabled\n    \n    if State.IsEnabled then\n        ToggleSwitch.BackgroundColor3 = Color3.fromRGB(50, 180, 50)\n        ToggleSwitch.Text = \"ON\"\n        ApplySpeed()\n    else\n        ToggleSwitch.BackgroundColor3 = Color3.fromRGB(100, 100, 120)\n        ToggleSwitch.Text = \"OFF\"\n        ResetSpeed()\n    end\nend)\n\n-- ============================================\n-- MINIMIZE BUTTON\n-- ============================================\n\nMinimizeBtn.MouseButton1Click:Connect(function()\n    State.IsMinimized = true\n    MainPanel.Visible = false\n    MinimizedBtn.Visible = true\nend)\n\nMinimizedBtn.MouseButton1Click:Connect(function()\n    State.IsMinimized = false\n    MainPanel.Visible = true\n    MinimizedBtn.Visible = false\nend)\n\n-- ============================================\n-- CLOSE BUTTON\n-- ============================================\n\nCloseBtn.MouseButton1Click:Connect(function()\n    ResetSpeed()\n    ScreenGui:Destroy()\n    print(\"✓ Speed UI closed\")\nend)\n\n-- ============================================\n-- INITIALIZATION\n-- ============================================\n\nUpdateSliderDisplay()\nprint(\"✓ Speed UI loaded successfully!\")\nprint(\"✓ Drag the title bar to move\")\nprint(\"✓ Toggle ON/OFF to enable speed\")\nprint(\"✓ Drag slider to adjust speed (16-100)\")\n",
-  "message": "Add complete mobile-optimized Speed UI script for Roblox"
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+-- CONFIGURATION
+local Config = {
+    MIN_SPEED = 16,
+    MAX_SPEED = 100,
+    DEFAULT_SPEED = 16
 }
-Perfect! I've created a complete Speed UI script for your Roblox game. Here's what's included:
 
-✨ Features:
-✅ Single Feature - Speed control only
-✅ Auto-Creating UI - Spawns when script runs
-✅ Draggable Panel - Move anywhere on screen
-✅ Mobile Optimized - Touch & mouse support
-✅ Speed Slider - 16 to 100 range
-✅ ON/OFF Toggle - Enable/disable instantly
-✅ Minimize Button - Collapse to small icon
-✅ Close Button - Remove UI completely
-✅ Respawn Support - Reapplies speed after respawn
-✅ Clean Design - Modern rounded UI, easy on the eyes
+local State = {
+    CurrentSpeed = Config.DEFAULT_SPEED,
+    IsEnabled = false,
+    IsMinimized = false
+}
 
-📋 How to Use:
-Go to Roblox Studio
-Place in StarterPlayer → StarterPlayerScripts as a LocalScript
-Test the game - UI appears automatically
-Drag the title bar to move
-Adjust slider to set speed (16-100)
-Click ON/OFF to enable/disable
-Use Minimize button to collapse
-Click Close to remove
-The script handles everything: dragging, slider interaction, speed application, character respawning, and mobile touch support. It's completely self-contained with no external dependencies!
+-- CREATE MAIN SCREEN GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SpeedUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-Tolong buatkan format loadstring(game:HttpGet(...)) dari file SpeedUI.lua di repositori saya (yougaknow/roblox-speed-ui) agar bisa langsung dieksekusi di Delta
-Saya akan membuat format loadstring yang bisa dieksekusi langsung di Delta. Pertama, mari kita setup file di repositori Anda.
+-- Safe parent check for executor
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = CoreGui
+elseif CoreGui:FindFirstChild("RobloxGui") then
+    ScreenGui.Parent = CoreGui.RobloxGui
+else
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
 
+-- MAIN PANEL (DRAGGABLE WINDOW)
+local MainPanel = Instance.new("Frame")
+MainPanel.Name = "MainPanel"
+MainPanel.Parent = ScreenGui
+MainPanel.Size = UDim2.new(0, 220, 0, 160)
+MainPanel.Position = UDim2.new(0.5, -110, 0.4, -80)
+MainPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+MainPanel.BorderSizePixel = 0
+MainPanel.Active = true
+MainPanel.Draggable = true
 
-Get data from /repos/yougaknow/roblox-speed-ui
-Sepertinya repositori belum ada. Mari kita buat repositori terlebih dahulu, lalu saya akan membuat format loadstring untuk Anda.
+-- Corner Radius
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainPanel
 
-Berikut format loadstring yang siap untuk dieksekusi di Delta:
+-- TITLE BAR
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = MainPanel
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundTransparency = 1
 
-Lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/yougaknow/roblox-speed-ui/main/SpeedUI.lua"))()
-Langkah-langkah untuk membuat repositori dan upload file:
+local TitleText = Instance.new("TextLabel")
+TitleText.Parent = TitleBar
+TitleText.Size = UDim2.new(0.7, 0, 1, 0)
+TitleText.Position = UDim2.new(0, 15, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "⚡ Speed GUI"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextSize = 16
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
 
-Buat repositori baru di GitHub:
+-- CLOSE BUTTON
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Parent = TitleBar
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0.5, -15)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 14
+CloseBtn.Font = Enum.Font.GothamBold
 
-Buka https://github.com/new
-Nama: roblox-speed-ui
-Buat repository
-Upload file SpeedUI.lua:
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseBtn
 
-Di repository, klik "Add file" → "Create new file"
-Nama file: SpeedUI.lua
-Paste kode dari file sebelumnya
-Commit
-Gunakan loadstring ini di Delta:
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
 
-Lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/yougaknow/roblox-speed-ui/main/SpeedUI.lua"))()
-Apakah Anda ingin saya:
+-- CONTENT CONTAINER
+local Content = Instance.new("Frame")
+Content.Parent = MainPanel
+Content.Size = UDim2.new(1, 0, 1, -40)
+Content.Position = UDim2.new(0, 0, 0, 40)
+Content.BackgroundTransparency = 1
 
-✅ Membuat repository untuk Anda?
-✅ Upload file SpeedUI.lua langsung?
-✅ Membuat format loadstring final?
-Saya bisa membantu langsung jika Anda memberikan akses atau konfirmasi untuk melanjutkan!
+-- TOGGLE BUTTON
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Parent = Content
+ToggleBtn.Size = UDim2.new(0.85, 0, 0, 40)
+ToggleBtn.Position = UDim2.new(0.075, 0, 0.1, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+ToggleBtn.Text = "Status: OFF"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 14
+ToggleBtn.Font = Enum.Font.GothamBold
 
-Ask anything or type @ to add context
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 8)
+ToggleCorner.Parent = ToggleBtn
 
+-- SPEED DISPLAY LABEL
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Parent = Content
+SpeedLabel.Size = UDim2.new(0.85, 0, 0, 25)
+SpeedLabel.Position = UDim2.new(0.075, 0, 0.45, 0)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed: 16"
+SpeedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+SpeedLabel.TextSize = 14
+SpeedLabel.Font = Enum.Font.GothamMedium
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- SPEED INCREASE BUTTON (+)
+local PlusBtn = Instance.new("TextButton")
+PlusBtn.Parent = Content
+PlusBtn.Size = UDim2.new(0.4, 0, 0, 35)
+PlusBtn.Position = UDim2.new(0.525, 0, 0.65, 0)
+PlusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+PlusBtn.Text = "Speed +"
+PlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlusBtn.TextSize = 14
+PlusBtn.Font = Enum.Font.GothamBold
+
+local PlusCorner = Instance.new("UICorner")
+PlusCorner.CornerRadius = UDim.new(0, 8)
+PlusCorner.Parent = PlusBtn
+
+-- SPEED DECREASE BUTTON (-)
+local MinusBtn = Instance.new("TextButton")
+MinusBtn.Parent = Content
+MinusBtn.Size = UDim2.new(0.4, 0, 0, 35)
+MinusBtn.Position = UDim2.new(0.075, 0, 0.65, 0)
+MinusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+MinusBtn.Text = "Speed -"
+MinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinusBtn.TextSize = 14
+MinusBtn.Font = Enum.Font.GothamBold
+
+local MinusCorner = Instance.new("UICorner")
+MinusCorner.CornerRadius = UDim.new(0, 8)
+MinusCorner.Parent = MinusBtn
+
+-- LOGIC & FUNCTIONALITY
+ToggleBtn.MouseButton1Click:Connect(function()
+    State.IsEnabled = not State.IsEnabled
+    if State.IsEnabled then
+        ToggleBtn.Text = "Status: ON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    else
+        ToggleBtn.Text = "Status: OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        end
+    end
+end)
+
+PlusBtn.MouseButton1Click:Connect(function()
+    if State.CurrentSpeed < Config.MAX_SPEED then
+        State.CurrentSpeed = State.CurrentSpeed + 10
+        SpeedLabel.Text = "Speed: " .. State.CurrentSpeed
+    end
+end)
+
+MinusBtn.MouseButton1Click:Connect(function()
+    if State.CurrentSpeed > Config.MIN_SPEED then
+        State.CurrentSpeed = State.CurrentSpeed - 10
+        SpeedLabel.Text = "Speed: " .. State.CurrentSpeed
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if State.IsEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = State.CurrentSpeed
+    end
+end)
